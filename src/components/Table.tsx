@@ -130,12 +130,12 @@ export default function Table() {
         />
 
         <button
+          id="filtrar"
           type="button"
           onClick={ () => setFormData([...formData, inputValue]) }
           data-testid="button-filter"
         >
           Filtrar
-
         </button>
 
         <label htmlFor="ASC">Ascendente</label>
