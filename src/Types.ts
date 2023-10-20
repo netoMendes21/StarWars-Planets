@@ -24,6 +24,7 @@ export type PlanetsType = {
 
 export type FiltroDasOpcoes = {
   name: string,
+  ordenar: string,
   coluna: string,
   operador: string,
   filtroNumerico: string,

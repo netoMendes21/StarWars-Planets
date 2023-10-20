@@ -2,16 +2,24 @@ import { useContext, useEffect, useState } from 'react';
 import PlanetsContext from '../context/Context';
 import { FiltroDasOpcoes } from '../Types';
 
-function Table() {
+export default function Table() {
   const { planetsList } = useContext(PlanetsContext);
   const [planetaFiltrado, setPlanetaFiltrado] = useState(planetsList);
   const [inputValue, setInputValue] = useState<FiltroDasOpcoes>({
     name: '',
+    ordenar: '',
     coluna: 'population',
     operador: 'maior que',
     filtroNumerico: '0',
   });
   const [formData, setFormData] = useState<FiltroDasOpcoes[]>([]);
+  const [sortTable, setSortTable] = useState({
+    sort: '', column: 'population',
+  });
+
+  const [tabelaOrdenada, setTabelaOrdenada] = useState({
+    sort: '', column: 'population',
+  });
 
   const handleChangeInput = (e:
   React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -19,14 +27,16 @@ function Table() {
     setInputValue({ ...inputValue, [name]: value });
   };
 
-  const resultadoColuna = formData.map((elemento) => elemento.coluna);
+  const handleChangeSort = (e:
+  React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setTabelaOrdenada({ ...tabelaOrdenada, [name]: value });
+  };
 
+  const resultadoColuna = formData.map((elemento) => elemento.coluna);
   const arrayColuna = [
-    'population',
-    'orbital_period',
-    'diameter',
-    'rotation_period',
-    'surface_water'];
+    'population', 'orbital_period', 'diameter',
+    'rotation_period', 'surface_water'];
 
   const comparadorArrays = arrayColuna
     .filter((elemento) => !resultadoColuna.includes(elemento));
@@ -51,7 +61,25 @@ function Table() {
         return Number(planeta[selecao.coluna]) === Number(selecao.filtroNumerico);
       }
       return false;
-    }));
+    })).sort((a: any, b: any) => {
+      if (a[sortTable.column] === 'unknown') return 1;
+      if (b[sortTable.column] === 'unknown') return -1;
+      if (sortTable.sort === 'ASC') {
+        return Number(a[sortTable.column]) - Number(b[sortTable.column]);
+      } if (sortTable.sort === 'DESC') {
+        return Number(b[sortTable.column]) - Number(a[sortTable.column]);
+      }
+      return 0;
+    });
+
+  const excluirColuna = (item: any) => {
+    const exclusao = formData.filter((column) => !column.coluna.includes(item));
+    setFormData(exclusao);
+  };
+
+  const excluirTodosFiltros = () => {
+    setFormData([]);
+  };
 
   return (
     <div>
@@ -61,7 +89,13 @@ function Table() {
           <p>{elem.coluna}</p>
           <p>{elem.operador}</p>
           <p>{elem.filtroNumerico}</p>
-          <button type="button">Remover</button>
+          <button
+            onClick={ () => excluirColuna(elem.coluna) }
+            type="button"
+          >
+            Remover
+
+          </button>
         </div>
       ))}
       <form>
@@ -104,6 +138,57 @@ function Table() {
 
         </button>
 
+        <label htmlFor="ASC">Ascendente</label>
+        <input
+          data-testid="column-sort-input-asc"
+          type="radio"
+          onChange={ handleChangeSort }
+          checked={ tabelaOrdenada.sort === 'ASC' }
+          name="sort"
+          id="ASC"
+          value="ASC"
+        />
+
+        <label htmlFor="DESC">Descrescente</label>
+        <input
+          data-testid="column-sort-input-desc"
+          type="radio"
+          value="DESC"
+          onChange={ handleChangeSort }
+          name="sort"
+          checked={ tabelaOrdenada.sort === 'DESC' }
+        />
+
+        <select
+          value={ tabelaOrdenada.column }
+          onChange={ handleChangeSort }
+          data-testid="column-sort"
+          name="column"
+        >
+          <option value="population">population</option>
+          <option value="orbital_period">orbital_period</option>
+          <option value="diameter">diameter</option>
+          <option value="rotation_period">rotation_period</option>
+          <option value="surface_water">surface_water</option>
+        </select>
+
+        <button
+          type="button"
+          data-testid="column-sort-button"
+          onClick={ () => setSortTable(tabelaOrdenada) }
+          name="ordenar"
+        >
+          Ordenar
+        </button>
+
+        <button
+          type="button"
+          data-testid="button-remove-filters"
+          onClick={ () => excluirTodosFiltros() }
+        >
+          Remover Filtros
+
+        </button>
       </form>
 
       <label>
@@ -115,7 +200,6 @@ function Table() {
           onChange={ handleChangeInput }
           name="name"
         />
-
       </label>
       <table>
         <thead>
@@ -138,7 +222,7 @@ function Table() {
         <tbody>
           {filtroGeral.map((planeta, index) => (
             <tr key={ index }>
-              <td>{planeta.name}</td>
+              <td data-testid="planet-name">{planeta.name}</td>
               <td>{planeta.rotation_period}</td>
               <td>{planeta.orbital_period}</td>
               <td>{planeta.diameter}</td>
@@ -161,9 +245,6 @@ function Table() {
           ))}
         </tbody>
       </table>
-
     </div>
   );
 }
-
-export default Table;
