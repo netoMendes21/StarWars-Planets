@@ -82,8 +82,8 @@ export default function Table() {
   };
 
   return (
-    <div>
-      <h1>Projeto Star Wars - Trybe</h1>
+    <div className="App">
+      <h1 className="App-logo">Projeto Star Wars - Trybe</h1>
       {formData.map((elem, index) => (
         <div key={ index } data-testid="filter">
           <p>{elem.coluna}</p>
